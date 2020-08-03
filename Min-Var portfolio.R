@@ -55,4 +55,33 @@ get_prices = function(ticker_vec, from = '2017-01-04'){
 }
 
 
+test = get_prices(c('AAPL', 'GE', 'T'))
+
+
+#return dor just one vector data
+ret = function(vect){
+  vect = as.numeric(unlist(vect))
+  M = length(vect)
+  i = 2
+    
+  results = c()
+  results[1] = NA
+  while(i <= M){
+    results[i] = (vect[i] - vect[i-1])/vect[i-1]
+    i = i +1
+  }
+  return(results)
+}
+
+#complete function wich use the previus one 
+get_returns = function(prices){
+  N = ncol(prices)
+  for(i in 2:N){
+    prices[, i] = ret_single(prices[, i]) 
+    }
+    
+  return(prices[-1, ])
+  }
+
+
 
