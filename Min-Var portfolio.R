@@ -108,18 +108,27 @@ min_var_portfolio = function(r_mat, beta = 0.5, short = FALSE){
       rhs = c(100)
     )
   }else{
+    Amat = rep(1,N)
+    bound = V_bound(li = 1:N,
+                    lb = rep(-100, N))
     constr = L_constraint(
       Amat,
-      dir = c('==', rep(N, '<'), rep(N, '>')),
-      rhs = c(100, rep(N, Inf), rep(N, -Inf))
+      dir = c('=='),
+      rhs = c(100)
     )
+    #costructing the optimization problem 
+    portfolio = OP(objective = obj,
+                   constraints = constr,
+                   bounds = bound)
+    #return the problem solution objective
+    return(ROI_solve(test_p, solver = 'quadprog'))
   }
+  
+  portfolio = OP(objective = obj,
+                 constraints = constr)
   
   return(list(objective = obj, constraint =  constr))
 }
-
-
-
 
 
 
