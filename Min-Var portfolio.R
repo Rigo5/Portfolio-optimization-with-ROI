@@ -1,6 +1,7 @@
 library(quantmod)
 library(stringr)
-
+library(ROI)
+library(ROI.plugin.quadprog)
 #function for download data 
 #I gonna use the getSymbols function
 
@@ -81,7 +82,59 @@ get_returns = function(prices){
     }
     
   return(prices[-1, ])
+}
+
+####Porfolio Classic Markowitz#####
+
+min_var_portfolio = function(r_mat, beta = 0.5, short = FALSE){
+  r_mat = na.omit(r_mat)
+  
+  N = ncol(r_mat)
+  asset_names = colnames(r_mat)
+  mu = colMeans(r_mat)
+  
+  
+  obj = Q_objective(
+    Q = beta * 2 * cov(r_mat),
+    L = -mu
+  )
+  #The short is such that by selling I finance other positions
+  #Is basic model without any type of cost of borrowing
+  if(short == FALSE){
+    Amat = rep(1,N)
+    constr = L_constraint(
+      Amat,
+      dir = c('=='),
+      rhs = c(100)
+    )
+  }else{
+    constr = L_constraint(
+      Amat,
+      dir = c('==', rep(N, '<'), rep(N, '>')),
+      rhs = c(100, rep(N, Inf), rep(N, -Inf))
+    )
   }
+  
+  return(list(objective = obj, constraint =  constr))
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
