@@ -105,6 +105,8 @@ get_cumulated = function(prices){
 
 min_var_portfolio = function(r_mat, beta = 0.5, short = FALSE){
   r_mat = na.omit(r_mat)
+  #erase the Index
+  r_mat = r_mat[, -1]
   
   N = ncol(r_mat)
   asset_names = colnames(r_mat)
@@ -138,25 +140,29 @@ min_var_portfolio = function(r_mat, beta = 0.5, short = FALSE){
                    constraints = constr,
                    bounds = bound)
     #return the problem solution objective
-    return(ROI_solve(test_p, solver = 'quadprog'))
+    return(ROI_solve(portfolio, solver = 'quadprog'))
   }
   
   portfolio = OP(objective = obj,
                  constraints = constr)
   
-  return(list(objective = obj, constraint =  constr))
+  return(ROI_solve(portfolio, solver = 'quadprog'))
 }
 
 
-#I gonna scrape the tickers of the SP500 from Yahoo Finance site
+#I gonna scrape the tickers of the SP500 
 
-
-
-
-
-
-
-
+scrape_sp500 = function(){
+  require(rvest)
+  
+  tabl = read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies') %>% html_table(header = TRUE, fill = TRUE ) %>%
+    .[[1]] %>% as.data.frame() %>% .[, c(1,2,4)]
+  
+  tick = as.list(tabl[, 1])
+  names(tick) = tabl[, 2]
+  
+  return(tick)
+}
 
 
 
