@@ -60,7 +60,7 @@ ui = fluidPage(
         'Risk aversion',
         value = 0.5,
         min = 0.01,
-        max = 1,
+        max = 0.99,
         step = 0.01
       )
     )
@@ -69,6 +69,7 @@ ui = fluidPage(
     plotlyOutput('Weights')
   ),
   fluidRow(
+    h3('Backtest'),
     plotlyOutput('Backtest')
   )
 )

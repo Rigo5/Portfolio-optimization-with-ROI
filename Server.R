@@ -50,6 +50,21 @@ server = function(input, output){
                      panel.background = element_rect(fill = 'white')))
   })
   
+  backtest_portfolio = reactive({
+    if(input$Type_port == 'Short'){
+      performance = backtest(sample = input$Sample, beta = input$Beta, ret_mat = returns(), short = TRUE)
+    }else{
+      performance = backtest(sample = input$Sample, beta = input$Beta, ret_mat = returns())
+    }
+    
+    return(get_cumulated(performance, price = FALSE))
+  })
+  
+  
+  output$Backtest = renderPlotly({
+    ggplotly(backtest_portfolio() %>% ggplot(mapping = aes(x = Index, y = Port_ret))+ 
+      geom_line())
+  })
 }
 
 
