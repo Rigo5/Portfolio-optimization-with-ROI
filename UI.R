@@ -50,8 +50,7 @@ ui = fluidPage(
       selectInput(
         'Type_port',
         'Strategy',
-        values = c('Long Only', 'Short'),
-        selected = 'Long Only'
+        choices = c('Long Only' = 'Long Only', 'Short' = 'Short')
       )
     ),
     column(
