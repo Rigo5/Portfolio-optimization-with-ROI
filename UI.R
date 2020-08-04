@@ -59,8 +59,9 @@ ui = fluidPage(
         'Beta',
         'Risk aversion',
         value = 0.5,
-        min = 0.000001,
-        max = 1
+        min = 0.01,
+        max = 1,
+        step = 0.01
       )
     )
   ),
