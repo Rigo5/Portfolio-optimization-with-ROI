@@ -2,6 +2,7 @@ library(quantmod)
 library(stringr)
 library(ROI)
 library(ROI.plugin.quadprog)
+
 #function for download data 
 #I gonna use the getSymbols function
 
@@ -17,6 +18,7 @@ get_symbol = function(ticker, from = '2017-01-04'){
   
   return(price)
 }
+
 
 #return a data frame with the different prices from a list 
 merge_prices = function(list_prices){
@@ -84,6 +86,21 @@ get_returns = function(prices){
   return(prices[-1, ])
 }
 
+#function for cumulated returns
+get_cumulated = function(prices){
+  ret_mat = get_returns(prices)
+  N = ncol(ret_mat)
+  
+  #Index base = 100
+  ret_mat[, 2:N] = ret_mat[, 2:N] +1
+  ret_mat[1, 2:N] = 100 
+  #cumulated returns now
+  ret_mat[, 2:N] = apply(ret_mat[, 2:N], 2, cumprod)
+  
+  
+  return(ret_mat)
+}
+
 ####Porfolio Classic Markowitz#####
 
 min_var_portfolio = function(r_mat, beta = 0.5, short = FALSE){
@@ -131,10 +148,7 @@ min_var_portfolio = function(r_mat, beta = 0.5, short = FALSE){
 }
 
 
-
-
-
-
+#I gonna scrape the tickers of the SP500 from Yahoo Finance site
 
 
 
