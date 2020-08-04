@@ -87,18 +87,37 @@ get_returns = function(prices){
 }
 
 #function for cumulated returns
-get_cumulated = function(prices){
-  ret_mat = get_returns(prices)
-  N = ncol(ret_mat)
+get_cumulated = function(mat, price = TRUE ){
+  N = ncol(mat)
+  if(price == TRUE){
+    ret_mat = get_returns(mat)
+    
+    
+    #Index base = 100
+    ret_mat[, 2:N] = ret_mat[, 2:N] +1
+    ret_mat[1, 2:N] = 100 
+    #cumulated returns now
+    if(ncol(ret_mat) > 2){
+      ret_mat[, 2:N] = apply(ret_mat[, 2:N], 2, cumprod)
+    }else{
+      ret_mat[, 2] = cumprod(ret_mat[, 2])
+    }
+    
+    
+    return(ret_mat)
+  }else{
+    #Index base = 100
+    mat[, 2:N] = mat[, 2:N] +1
+    mat[1, 2:N] = 100 
+    #cumulated returns now
+    if(ncol(mat) > 2){
+      mat[, 2:N] = apply(mat[, 2:N], 2, cumprod)
+    }else{
+      mat[, 2] = cumprod(mat[, 2])
+    }
+    return(mat)
+  }
   
-  #Index base = 100
-  ret_mat[, 2:N] = ret_mat[, 2:N] +1
-  ret_mat[1, 2:N] = 100 
-  #cumulated returns now
-  ret_mat[, 2:N] = apply(ret_mat[, 2:N], 2, cumprod)
-  
-  
-  return(ret_mat)
 }
 
 ####Porfolio Classic Markowitz#####
@@ -115,7 +134,7 @@ min_var_portfolio = function(r_mat, beta = 0.5, short = FALSE){
   
   obj = Q_objective(
     Q = beta * 2 * cov(r_mat),
-    L = -mu
+    L = -(1-beta)*mu
   )
   #The short is such that by selling I finance other positions
   #Is basic model without any type of cost of borrowing
@@ -124,7 +143,7 @@ min_var_portfolio = function(r_mat, beta = 0.5, short = FALSE){
     constr = L_constraint(
       Amat,
       dir = c('=='),
-      rhs = c(100)
+      rhs = c(1)
     )
   }else{
     Amat = rep(1,N)
@@ -133,7 +152,7 @@ min_var_portfolio = function(r_mat, beta = 0.5, short = FALSE){
     constr = L_constraint(
       Amat,
       dir = c('=='),
-      rhs = c(100)
+      rhs = c(1)
     )
     #costructing the optimization problem 
     portfolio = OP(objective = obj,
@@ -165,5 +184,35 @@ scrape_sp500 = function(){
 }
 
 
+#function for backtesting 
 
+backtest = function(sample, ret_mat, short = FALSE, beta = 0.5){
+  #beginning and end of sample period 
+  start_p = sample +1  
+  end_p = start_p - sample
+  
+  N = nrow(ret_mat)
+  Index = ret_mat[, 1]
+  solution = list()
+  
+  c = 1
+  while(start_p <= N){
+    data_p = ret_mat[end_p:start_p, -1]
+    solution_list = min_var_portfolio(data_p, beta = beta, short = short)
+    solution[[c]] = round(solution_list$solution, 3)
+    
+    start_p = start_p + 1
+    end_p = end_p + 1
+    c = c +1 
+  }
+  weight_data = do.call(rbind, solution)
+  
+  #now I derive the portfolio returns 
+  port_ret = round(weight_data * ret_mat[(sample +1):N, -1], 3)
+  port_ret = apply(port_ret, 1, sum)
+  
+  #arrange the returns with the Date index 
+  return(data.frame(Index = Index[(sample +1):N], Port_ret = port_ret))
+  
+}
 
