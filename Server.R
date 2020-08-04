@@ -1,3 +1,7 @@
+#Obtain the tickers 
+ticker_list = scrape_sp500()
+
+
 #Server part of the shiny app 
 
 server = function(input, output){
@@ -25,6 +29,27 @@ server = function(input, output){
              geom_line()+
              theme_classic())
   })
+  
+  portfolio = reactive({
+    N = nrow(returns())
+    ret_mat = returns()[(N - input$Sample):N, ]
+    
+    if(input$Type_port == 'Short'){
+      return(min_var_portfolio(ret_mat, beta = input$Beta, short = TRUE))
+    }else{
+      return(min_var_portfolio(ret_mat, beta = input$Beta))
+    }
+  })
+  
+  output$Weights = renderPlotly({
+    data = data.frame(Asset = colnames(returns()[, -1]), Weights = round(portfolio()$solution, 3))
+    
+    ggplotly(ggplot(data = data, mapping = aes(x = Asset, y = Weights, fill = as.factor(Asset)))+
+               geom_bar( stat="identity")+
+               theme(legend.position = 'none',
+                     panel.background = element_rect(fill = 'white')))
+  })
+  
 }
 
 
